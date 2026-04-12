@@ -1,5 +1,5 @@
 # =============================================================================
-# Deploy the React app to GitHub Pages via GitHub Actions (required for class).
+# Deploy the React app to GitHub Pages via GitHub Actions
 # =============================================================================
 
 name: Deploy to GitHub Pages
@@ -37,7 +37,7 @@ jobs:
           if [ -z "$U" ]; then
             echo "demo=true" >> "$GITHUB_OUTPUT"
             echo "url=http://127.0.0.1:0" >> "$GITHUB_OUTPUT"
-            echo "::notice::No REACT_APP_API_URL — building OFFLINE DEMO (localStorage)."
+            echo "::notice::No REACT_APP_API_URL — building OFFLINE DEMO."
           else
             U="${U%/}"
             case "$U" in
@@ -48,13 +48,13 @@ jobs:
             echo "url=${U}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: CORS hint (set this on your API host)
+      - name: CORS hint
         if: ${{ steps.api.outputs.demo != 'true' }}
         run: |
-          echo "Set CLIENT_ORIGIN on backend to:"
+          echo "Set CLIENT_ORIGIN to:"
           echo "https://${{ github.repository_owner }}.github.io"
 
-      - name: Set PUBLIC_URL for GitHub Pages
+      - name: Set PUBLIC_URL
         id: base
         shell: bash
         run: |
@@ -84,7 +84,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: SPA fallback (for React Router)
+      - name: SPA fallback
         run: cp client/build/index.html client/build/404.html
 
       - uses: actions/upload-pages-artifact@v3
@@ -108,5 +108,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: POST deploy hook
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Triggering Render deploy..."
+            curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+          else
+            echo "No deploy hook set, skipping."
+          fi
