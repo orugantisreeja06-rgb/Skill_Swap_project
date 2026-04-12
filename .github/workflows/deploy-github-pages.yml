@@ -1,22 +1,6 @@
 # =============================================================================
 # Deploy the React app to GitHub Pages via GitHub Actions (required for class).
 # =============================================================================
-#
-# GitHub Pages = static files only. If REACT_APP_API_URL is not set, the build
-# uses offline DEMO mode (data in localStorage — site works without Render).
-# For a shared live backend, set Variable or Secret REACT_APP_API_URL and deploy
-# the API (render.yaml). See .github/DEPLOY.md
-#
-# Optional (GitHub → Settings → Secrets and variables → Actions):
-#   REACT_APP_API_URL = https://your-api.onrender.com (no trailing slash, no /api)
-#
-# On Render, set CLIENT_ORIGIN to: https://YOUR_GITHUB_USERNAME.github.io
-#
-# Optional secret: RENDER_DEPLOY_HOOK_URL — Render deploy hook to refresh API after Pages deploy.
-#
-# Optional variable: REACT_APP_GOOGLE_CLIENT_ID — Web client ID from Google Cloud Console
-# (same value as GOOGLE_CLIENT_ID on Render). Omit to hide Google sign-in on the site.
-# =============================================================================
 
 name: Deploy to GitHub Pages
 
@@ -53,7 +37,7 @@ jobs:
           if [ -z "$U" ]; then
             echo "demo=true" >> "$GITHUB_OUTPUT"
             echo "url=http://127.0.0.1:0" >> "$GITHUB_OUTPUT"
-            echo "::notice::No REACT_APP_API_URL — building OFFLINE DEMO (localStorage). Set the variable later for a live API."
+            echo "::notice::No REACT_APP_API_URL — building OFFLINE DEMO (localStorage)."
           else
             U="${U%/}"
             case "$U" in
@@ -62,13 +46,12 @@ jobs:
             U="${U%/}"
             echo "demo=false" >> "$GITHUB_OUTPUT"
             echo "url=${U}" >> "$GITHUB_OUTPUT"
-            echo "✓ API origin for this build: ${U}"
           fi
 
       - name: CORS hint (set this on your API host)
         if: ${{ steps.api.outputs.demo != 'true' }}
         run: |
-          echo "On Render → Environment → CLIENT_ORIGIN must be exactly:"
+          echo "Set CLIENT_ORIGIN on backend to:"
           echo "https://${{ github.repository_owner }}.github.io"
 
       - name: Set PUBLIC_URL for GitHub Pages
@@ -79,10 +62,8 @@ jobs:
           OWNER="${{ github.repository_owner }}"
           if [ "$NAME" = "$OWNER.github.io" ]; then
             echo "path=/" >> "$GITHUB_OUTPUT"
-            echo "Using PUBLIC_URL=/ (user site)"
           else
             echo "path=/$NAME/" >> "$GITHUB_OUTPUT"
-            echo "Using PUBLIC_URL=/$NAME/ (project site)"
           fi
 
       - uses: actions/setup-node@v4
@@ -103,7 +84,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: SPA fallback (direct URLs like /dashboard)
+      - name: SPA fallback (for React Router)
         run: cp client/build/index.html client/build/404.html
 
       - uses: actions/upload-pages-artifact@v3
@@ -125,7 +106,7 @@ jobs:
     name: Trigger Render deploy hook (optional)
     needs: deploy
     runs-on: ubuntu-latest
-    if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
     steps:
       - name: POST deploy hook
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
         run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
