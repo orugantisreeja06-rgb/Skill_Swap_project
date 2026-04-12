@@ -1,0 +1,14 @@
+{
+  "name": "skillswap",
+  "private": true,
+  "description": "Run API + React together for real-time SkillSwap (Socket.IO + MongoDB).",
+  "scripts": {
+    "server": "npm run start --prefix server",
+    "client": "npm run start --prefix client",
+    "dev": "concurrently -k -n api,web -c blue,magenta \"npm run server\" \"npm run client\"",
+    "build:client": "npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

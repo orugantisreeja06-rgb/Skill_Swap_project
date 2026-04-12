@@ -1,0 +1,35 @@
+# Deploy the SkillSwap API (Node + Express + Socket.IO) on Render.
+# GitHub Pages only hosts the React app; this file defines the backend service.
+#
+# Setup: https://dashboard.render.com → New → Blueprint → connect this repo.
+# After the service is live, copy its URL (e.g. https://skillswap-api.onrender.com) and set
+#   GitHub → Settings → Secrets and variables → Actions → Variables → REACT_APP_API_URL
+# (or use a Secret with the same name.)
+#
+# In the Render dashboard for this service, set:
+#   MONGO_URI   — MongoDB Atlas or other connection string
+#   JWT_SECRET  — long random string
+#   CLIENT_ORIGIN — https://YOUR_GITHUB_USERNAME.github.io  (no /repo path; required for CORS + chat)
+#   GOOGLE_CLIENT_ID — optional; same as REACT_APP_GOOGLE_CLIENT_ID (OAuth 2.0 Web client ID)
+
+services:
+  - type: web
+    name: skillswap-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
