@@ -3,62 +3,46 @@ name: build
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1
       - name: Set up job
-        run: echo "🚀 Starting SkillSwap CI Pipeline"
+        run: echo "🚀 Starting SkillSwap CI"
 
-      # Step 2
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 3
       - name: Show repository structure
         run: ls -R
 
-      # Step 4
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Step 5
       - name: Install Backend Dependencies
         run: |
           cd server
           npm install
 
-      # Step 6
       - name: Run Backend Check
         run: |
           cd server
-          node -e "console.log('✅ Backend running correctly')"
+          node -e "console.log('Backend OK')"
 
-      # Step 7
       - name: Install Frontend Dependencies
         run: |
           cd client
           npm install
 
-      # Step 8
       - name: Build React App
         run: |
           cd client
           npm run build
 
-      # Step 9
-      - name: Post Setup Node
-        run: echo "✅ Node setup complete"
-
-      # Step 10
-      - name: Post Checkout Code
-        run: echo "✅ Code checkout complete"
-
-      # Step 11
       - name: Complete job
         run: echo "🎉 Build Successful"
